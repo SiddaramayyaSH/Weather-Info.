@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Weather</title>
+    </head>
+
+    <body>
+        <h1 id="intro"><center>Weather Info</center></h1>
+
+        <div id="searchContainer">
+            <input class="searchControl" type="text" placeholder="Please Enter City Name" id="searchInput">
+            <button class="searchControl" id="searchBtn">Search</button>
+        </div>
+          <div id="weatherContainer">
+            <div id="weatherDescription">
+                <h1 id="cityHeader"></h1>
+                <div id="weatherMain">
+                    <div id="temperature"></div>
+                    <div id="weatherDescriptionHeader"></div>
+                    <div><img id="documentIconImg"></div>
+                </div>
+                <hr>
+                <div id="windSpeed" class="bottom-details"></div>
+                <div id="humidity" class="bottom-details"></div>
+
+            </div>
+
+        </div>
+    </body>
+</html>
+<style>
+*{
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+    body {
+    background-color: grey;
+    background-image: url("bg.png");
+    background-size:100%;
+    background-repeat: no-repeat;
+    color: white;
+    text-shadow: 2px 2px 1px black;
+    font-family: "Palatino", "Book Antiqua", serif;
+}
+
+#intro {
+
+    padding: 15px 25px;
+    margin: 20px;
+    position: center;
+    display: block;
+    background-color:lightslategray;
+    
+}
+
+#weatherContainer {
+    background-color: rgba(0, 0, 0, 0.25);
+    box-shadow: 1px 1px 5px black;
+    padding: 25px;
+    width: auto;
+    border-radius: 10px;
+    visibility: hidden;
+}
+#weatherContainer h1 {
+    margin: 5px;
+    font-size: 42px;
+    font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+#searchContainer {
+    padding: 20px;
+    margin-left: 37%;
+    
+}
+#searchContainer input {
+    width: 50%px;
+}
+#searchContainer button {
+    background-color:grey;
+    color: white;
+    width: 75px;
+    font-weight: bolder;
+}
+.searchControl {
+    box-shadow: 2px 2px 5px rgb(0, 0, 0);
+    border: none;
+    border-radius: 5px;
+    padding: 8px;
+    font-size: larger;
+}
+@media (min-width: 768px) {
+
+    #searchContainer input{
+        width: 50vh;
+        height: 10vh;
+    }
+    #searchContainer button {
+        width: 10vh;
+        height: 10vh;
+
+    }
+}
+#weatherMain {
+    display: block;
+    margin-bottom: 20px;
+}
+#weatherMain div {
+    display: inline-block;
+}
+#weatherDescriptionHeader {
+    font-size: 28px;
+    vertical-align: 50%;
+}
+#temperature {
+    font-size: 38px;
+    vertical-align: 25%;
+}
+.bottom-details {
+    display: block;
+    font-size: 24px;
+    text-align: right;
+}
+hr {
+    margin-bottom: 20px;
+}
+</style>
+<script>
+
+    //API ID used fetch the data or connect to openweather app
+    // we need to create account in openweather 
+    let appId = 'd2cdd0bdb353f72e2efee5b54aaf695b';
+    
+//declaration of variable searchmethod
+let searchMethod;
+//defination of getsearchmethod 
+function getSearchMethod(searchTerm) {
+    if(searchTerm.length === 5 && Number.parseInt(searchTerm) + '' === searchTerm)
+        searchMethod = 'zip';
+    else
+        searchMethod = 'q';// q means searching as a string.
+}
+
+
+let units = 'metric';// units is declared to get the scalar measurements
+function searchWeather(searchTerm) {
+    getSearchMethod(searchTerm);
+    fetch(`http://api.openweathermap.org/data/2.5/weather?${searchMethod}=${searchTerm}&APPID=${appId}&units=${units}`)// it is used to fetch the data from openweather site
+        .then((result) => {
+            return result.json();// json is using store the data and transport it
+        }).then((res) => {
+            init(res);
+    });
+}
+// this function is used to set the background image based on result from server for example if the sky is clear then the background image will clear image
+function init(resultFromServer) {
+    switch (resultFromServer.weather[0].main) {
+        case 'Clear':
+            document.body.style.backgroundImage = "url('clearPicture.jpg')";
+            break;
+
+        case 'Clouds':
+            document.body.style.backgroundImage = "url('cloudyPicture.jpg')";
+            break;
+
+        case 'Rain':
+        case 'Drizzle':
+            document.body.style.backgroundImage = "url('rainPicture.jpg')";
+            break;
+
+        case 'Mist':
+            document.body.style.backgroundImage = "url('mistPicture.jpg')";
+            break;
+
+        case 'Thunderstorm':
+            document.body.style.backgroundImage = "url('stormPicture.jpg')";
+            break;
+
+        case 'Snow':
+            document.body.style.backgroundImage = "url('snowPicture.jpg')";
+            break;
+
+        default:
+            break;
+    }
+
+    let weatherDescriptionHeader = document.getElementById('weatherDescriptionHeader');//object or variable for weather description like cloudy, clear, haze etc
+    let temperatureElement = document.getElementById('temperature');//object or variable for temperature in celcius 
+    let humidityElement = document.getElementById('humidity');// object or variable for humidity
+    let windSpeedElement = document.getElementById('windSpeed');// object or variable for wind speed
+    let cityHeader = document.getElementById('cityHeader');// object or variable to show city name 
+    let weatherIcon = document.getElementById('documentIconImg');// object or variable weather based icons
+
+    weatherIcon.src = 'http://openweathermap.org/img/w/' + resultFromServer.weather[0].icon + '.png';// used to fetch icons from open weather
+
+    let resultDescription = resultFromServer.weather[0].description; //intialized to get data from server
+    weatherDescriptionHeader.innerText = resultDescription.charAt(0).toUpperCase() + resultDescription.slice(1); // it sets the returned weather to first letter as capital. 
+    temperatureElement.innerHTML = Math.floor(resultFromServer.main.temp) + '&#176;';// it shows the temperature to floor value for example if it is 25.7 then the floor value will be 25
+    windSpeedElement.innerHTML = 'Wind Speed: ' + Math.floor(resultFromServer.wind.speed) + ' meter/s';// same as temperature it is set to floor value
+    cityHeader.innerHTML = resultFromServer.name; //city name for which we searched
+    humidityElement.innerHTML = 'Humidity levels: ' + resultFromServer.main.humidity +  '%';// it returns humidity in percentage
+
+    setPositionForWeatherInfo();// after all the values are set then objects will aligned by using this function
+}
+
+//fuction used to set the position of objects or elements
+function setPositionForWeatherInfo() {
+    let weatherContainer = document.getElementById('weatherContainer');
+    let weatherContainerHeight = weatherContainer.clientHeight;
+    let weatherContainerWidth = weatherContainer.clientWidth;
+
+    weatherContainer.style.left = `calc(50% - ${weatherContainerWidth/2}px)`;
+    weatherContainer.style.top = `calc(50% - ${weatherContainerHeight/1.3}px)`;
+    weatherContainer.style.visibility = 'visible';
+}
+
+//event listerner after clicking the search button 
+// searchterm is value or city we are searching for
+document.getElementById('searchBtn').addEventListener('click', () => {
+    let searchTerm = document.getElementById('searchInput').value;
+    if(searchTerm)
+        searchWeather(searchTerm);
+});
+</script>
